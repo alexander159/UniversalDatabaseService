@@ -17,6 +17,7 @@ public class DB2Database implements Database {
 
     @Override
     public Connection getConnection() throws SQLException {
+        //jdbc:db2://<host>[:<port>]/<database_name>
         return DriverManager.getConnection(
                 String.format("jdbc:db2://%s:%s/%s",
                         ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_HOST) : SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_HOST)),

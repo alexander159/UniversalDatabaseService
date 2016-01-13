@@ -45,7 +45,7 @@ public class OracleDatabase implements Database {
 
     @Override
     public Connection getConnection() throws SQLException {
-        // jdbc:oracle:thin:@//[HOST][:PORT]/SERVICE
+        // jdbc:oracle:thin:@//<host>[:<port>]/<service>
         return DriverManager.getConnection(
                 String.format("jdbc:oracle:thin:@//%s:%s/%s",
                         ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_HOST) : SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_HOST)),
