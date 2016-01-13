@@ -47,12 +47,16 @@ public class Main {
 
         //sync
         if (localDb != null && remoteDb != null) {
-            List<DatabaseData> d1 = localDb.select();
-            List<DatabaseData> d2 = remoteDb.select();
+            List<DatabaseData> localData = localDb.select();
+            LoggingJUL.getLogger().info("Local " + localDb.getClass().getName() + " SELECT. Returned " + localData.size() + " rows");
+            List<DatabaseData> remoteData = remoteDb.select();
+            LoggingJUL.getLogger().info("Remote " + remoteDb.getClass().getName() + " SELECT. Returned " + remoteData.size() + " rows");
 
-            d1.removeAll(d2);
-            remoteDb.insert(d1);
-        } else{
+            localData.removeAll(remoteData);
+            LoggingJUL.getLogger().info(localData.size() + " new records found in local " + localDb.getClass().getName());
+            remoteDb.insert(localData);
+            LoggingJUL.getLogger().info(localData.size() + " new records inserted to remote" + remoteDb.getClass().getName());
+        } else {
             LoggingJUL.getLogger().throwing(Main.class.getName(), new Object() {
             }.getClass().getEnclosingMethod().getName(), new NullPointerException("Local or Remote databases are NULL"));
         }

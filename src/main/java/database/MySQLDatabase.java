@@ -48,6 +48,7 @@ public class MySQLDatabase implements Database {
                 for (int i = 0; i < data.getRow().length; i++) {
                     ps.setString(i + 1, data.getRow()[i]);
                 }
+                LoggingJUL.getLogger().info(() -> ps.toString().substring(ps.toString().indexOf(": ") + 2));
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
@@ -74,14 +75,15 @@ public class MySQLDatabase implements Database {
         String sql = String.format("SELECT %s FROM %s",
                 columnsSql,
                 ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE) : SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TABLE)));
+        LoggingJUL.getLogger().info(() -> sql);
 
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 DatabaseData databaseData = new DatabaseData(new String[columns.length]);
-                for (int i = 0; i < columns.length; i++) {
-                    databaseData.add(rs.getString(columns[i]));
+                for (String column : columns) {
+                    databaseData.add(rs.getString(column));
                 }
                 result.add(databaseData);
             }
