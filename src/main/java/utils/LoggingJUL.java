@@ -69,6 +69,10 @@ public class LoggingJUL {
 
             Logger.getLogger("javax.management").setLevel(Level.WARNING);
             Logger.getLogger("javax.management.remote").setLevel(Level.WARNING);
+            Logger.getLogger("mysql").setLevel(Level.WARNING);
+            Logger.getLogger("com.oracle").setLevel(Level.WARNING);
+            Logger.getLogger("com.microsoft.sqlserver").setLevel(Level.WARNING);
+            Logger.getLogger("com.ibm.db2").setLevel(Level.WARNING);
         } catch (IOException e) {
             e.printStackTrace();
         }
