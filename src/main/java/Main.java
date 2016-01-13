@@ -54,8 +54,10 @@ public class Main {
 
             localData.removeAll(remoteData);
             LoggingJUL.getLogger().info(localData.size() + " new records found in local " + localDb.getClass().getName());
-            remoteDb.insert(localData);
-            LoggingJUL.getLogger().info(localData.size() + " new records inserted to remote" + remoteDb.getClass().getName());
+            if (localData.size() != 0) {
+                remoteDb.insert(localData);
+                LoggingJUL.getLogger().info(localData.size() + " new records inserted to remote" + remoteDb.getClass().getName());
+            }
         } else {
             LoggingJUL.getLogger().throwing(Main.class.getName(), new Object() {
             }.getClass().getEnclosingMethod().getName(), new NullPointerException("Local or Remote databases are NULL"));

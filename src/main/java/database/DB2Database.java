@@ -17,11 +17,6 @@ public class DB2Database implements Database {
 
     @Override
     public Connection getConnection() throws SQLException {
-        try {
-            Class.forName("com.ibm.db2.jcc.DB2Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
         return DriverManager.getConnection(
                 String.format("jdbc:db2://%s:%s/%s",
                         ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_HOST) : SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_HOST)),
