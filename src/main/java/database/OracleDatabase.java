@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-////jdbc:oracle:thin:@//127.0.0.1:1521/root
 public class OracleDatabase implements Database {
     private static final String[] timestampFormats = {
             "yyyy-MM-dd HH:mm:ss.SSS",
