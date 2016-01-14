@@ -1,9 +1,11 @@
 package universal.database.service;
+
 import database.*;
 import utils.Constants;
 import utils.LoggingJUL;
 import utils.SyncProperties;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -14,15 +16,23 @@ public class Main {
     public static void main(String[] a) {
         LoggingJUL.getLogger().info(() -> "Service started");
 
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (SyncProperties.reloadProperties() != null) {
-                    synchronize();
+        try {
+            timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (SyncProperties.reloadProperties() != null) {
+                        synchronize();
+                    }
                 }
-            }
-        }, 0, 1 * 60 * 1000);
+            }, 0, Integer.parseInt(SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.SYNC_MINUTES)) * 60 * 1000);
+        } catch (NumberFormatException ex) {
+            LoggingJUL.getLogger().throwing(Main.class.getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName(), new IOException(Constants.SYNC_PROPERTIES + " is incorrect"));
+            ex.printStackTrace();
+            timer.cancel();
+            LoggingJUL.getLogger().info(() -> "Service stopped");
+        }
     }
 
     private static void synchronize() {

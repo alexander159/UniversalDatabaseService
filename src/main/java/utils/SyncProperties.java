@@ -46,7 +46,8 @@ public class SyncProperties {
                     prop.getProperty(Constants.SyncPropFile.LOCAL_DB_NAME) == null || prop.getProperty(Constants.SyncPropFile.LOCAL_DB_NAME).isEmpty() ||
                     prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE) == null || prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE).isEmpty() ||
                     prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE) == null || prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE).isEmpty() ||
-                    prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS) == null || prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS).isEmpty()) {
+                    prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS) == null || prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS).isEmpty() ||
+                    prop.getProperty(Constants.SyncPropFile.SYNC_MINUTES) == null || prop.getProperty(Constants.SyncPropFile.SYNC_MINUTES).isEmpty()) {
                 LoggingJUL.getLogger().throwing(SyncProperties.class.getName(), new Object() {
                 }.getClass().getEnclosingMethod().getName(), new IOException(Constants.SYNC_PROPERTIES + " is incorrect"));
                 return null;
