@@ -1,3 +1,4 @@
+package universal.database.service;
 import database.*;
 import utils.Constants;
 import utils.LoggingJUL;
@@ -8,10 +9,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Main {
+    private static Timer timer;
+
     public static void main(String[] a) {
         LoggingJUL.getLogger().info(() -> "Service started");
 
-        Timer timer = new Timer();
+        timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -22,7 +25,7 @@ public class Main {
         }, 0, 1 * 60 * 1000);
     }
 
-    public static void synchronize() {
+    private static void synchronize() {
         Database remoteDb = null;
         if (SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TYPE).equals(Constants.SyncPropFile.MYSQL)) {
             remoteDb = new MySQLDatabase(Database.DatabaseType.REMOTE);

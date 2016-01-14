@@ -25,6 +25,11 @@ public class OracleDatabase implements Database {
 
     public OracleDatabase(Database.DatabaseType dbType) {
         this.dbType = dbType;
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public static Timestamp parse(String d) {

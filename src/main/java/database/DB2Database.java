@@ -13,6 +13,11 @@ public class DB2Database implements Database {
 
     public DB2Database(Database.DatabaseType dbType) {
         this.dbType = dbType;
+        try {
+            Class.forName("com.ibm.db2.jcc.DB2Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

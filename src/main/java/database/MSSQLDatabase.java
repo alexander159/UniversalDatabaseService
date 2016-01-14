@@ -24,6 +24,11 @@ public class MSSQLDatabase implements Database {
 
     public MSSQLDatabase(Database.DatabaseType dbType) {
         this.dbType = dbType;
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public static String parse(String d) {

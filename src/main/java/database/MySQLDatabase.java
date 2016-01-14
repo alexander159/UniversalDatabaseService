@@ -13,6 +13,11 @@ public class MySQLDatabase implements Database {
 
     public MySQLDatabase(Database.DatabaseType dbType) {
         this.dbType = dbType;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
