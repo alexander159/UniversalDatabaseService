@@ -7,7 +7,7 @@ import java.util.Properties;
 
 public class SyncProperties {
     private static SyncProperties instance;
-    private static Properties syncProp;
+    private Properties syncProp = loadSyncProp();
 
     private SyncProperties() {
     }
@@ -17,13 +17,6 @@ public class SyncProperties {
             instance = new SyncProperties();
         }
         return instance;
-    }
-
-    public static Properties getSyncProp() {
-        if (syncProp == null) {
-            syncProp = loadSyncProp();
-        }
-        return syncProp;
     }
 
     private static Properties loadSyncProp() {
@@ -48,12 +41,12 @@ public class SyncProperties {
                     prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE) == null || prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE).isEmpty() ||
                     prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS) == null || prop.getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS).isEmpty() ||
                     prop.getProperty(Constants.SyncPropFile.SYNC_MINUTES) == null || prop.getProperty(Constants.SyncPropFile.SYNC_MINUTES).isEmpty()) {
-                LoggingJUL.getLogger().throwing(SyncProperties.class.getName(), new Object() {
+                LoggingJUL.getInstance().getLogger().throwing(SyncProperties.class.getName(), new Object() {
                 }.getClass().getEnclosingMethod().getName(), new IOException(Constants.SYNC_PROPERTIES + " is incorrect"));
                 return null;
             }
         } catch (IOException e) {
-            LoggingJUL.getLogger().throwing(SyncProperties.class.getName(), new Object() {
+            LoggingJUL.getInstance().getLogger().throwing(SyncProperties.class.getName(), new Object() {
             }.getClass().getEnclosingMethod().getName(), e);
             e.printStackTrace();
             return null;
@@ -61,7 +54,11 @@ public class SyncProperties {
         return prop;
     }
 
-    public static Properties reloadProperties() {
+    public Properties getSyncProp() {
+        return syncProp;
+    }
+
+    public Properties reloadProperties() {
         syncProp = loadSyncProp();
         return syncProp;
     }

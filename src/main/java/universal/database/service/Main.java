@@ -14,65 +14,65 @@ public class Main {
     private static Timer timer;
 
     public static void main(String[] a) {
-        LoggingJUL.getLogger().info(() -> "Service started");
+        LoggingJUL.getInstance().getLogger().info(() -> "Service started");
 
         try {
             timer = new Timer();
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    if (SyncProperties.reloadProperties() != null) {
+                    if (SyncProperties.getInstance().reloadProperties() != null) {
                         synchronize();
                     }
                 }
-            }, 0, Integer.parseInt(SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.SYNC_MINUTES)) * 60 * 1000);
+            }, 0, Integer.parseInt(SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.SYNC_MINUTES)) * 60 * 1000);
         } catch (NumberFormatException ex) {
-            LoggingJUL.getLogger().throwing(Main.class.getName(), new Object() {
+            LoggingJUL.getInstance().getLogger().throwing(Main.class.getName(), new Object() {
             }.getClass().getEnclosingMethod().getName(), new IOException(Constants.SYNC_PROPERTIES + " is incorrect"));
             ex.printStackTrace();
             timer.cancel();
-            LoggingJUL.getLogger().info(() -> "Service stopped");
+            LoggingJUL.getInstance().getLogger().info(() -> "Service stopped");
         }
     }
 
     private static void synchronize() {
         Database remoteDb = null;
-        if (SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TYPE).equals(Constants.SyncPropFile.MYSQL)) {
+        if (SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TYPE).equals(Constants.SyncPropFile.MYSQL)) {
             remoteDb = new MySQLDatabase(Database.DatabaseType.REMOTE);
-        } else if (SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TYPE).equals(Constants.SyncPropFile.ORACLE)) {
+        } else if (SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TYPE).equals(Constants.SyncPropFile.ORACLE)) {
             remoteDb = new OracleDatabase(Database.DatabaseType.REMOTE);
-        } else if (SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TYPE).equals(Constants.SyncPropFile.MSSQL)) {
+        } else if (SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TYPE).equals(Constants.SyncPropFile.MSSQL)) {
             remoteDb = new MSSQLDatabase(Database.DatabaseType.REMOTE);
-        } else if (SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TYPE).equals(Constants.SyncPropFile.DB2)) {
+        } else if (SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TYPE).equals(Constants.SyncPropFile.DB2)) {
             remoteDb = new DB2Database(Database.DatabaseType.REMOTE);
         }
 
         Database localDb = null;
-        if (SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE).equals(Constants.SyncPropFile.MYSQL)) {
+        if (SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE).equals(Constants.SyncPropFile.MYSQL)) {
             localDb = new MySQLDatabase(Database.DatabaseType.LOCAL);
-        } else if (SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE).equals(Constants.SyncPropFile.ORACLE)) {
+        } else if (SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE).equals(Constants.SyncPropFile.ORACLE)) {
             localDb = new OracleDatabase(Database.DatabaseType.LOCAL);
-        } else if (SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE).equals(Constants.SyncPropFile.MSSQL)) {
+        } else if (SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE).equals(Constants.SyncPropFile.MSSQL)) {
             localDb = new MSSQLDatabase(Database.DatabaseType.LOCAL);
-        } else if (SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE).equals(Constants.SyncPropFile.DB2)) {
+        } else if (SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TYPE).equals(Constants.SyncPropFile.DB2)) {
             localDb = new DB2Database(Database.DatabaseType.LOCAL);
         }
 
         //sync
         if (localDb != null && remoteDb != null) {
             List<DatabaseData> localData = localDb.select();
-            LoggingJUL.getLogger().info("Local " + localDb.getClass().getName() + " SELECT. Returned " + localData.size() + " rows");
+            LoggingJUL.getInstance().getLogger().info("Local " + localDb.getClass().getName() + " SELECT. Returned " + localData.size() + " rows");
             List<DatabaseData> remoteData = remoteDb.select();
-            LoggingJUL.getLogger().info("Remote " + remoteDb.getClass().getName() + " SELECT. Returned " + remoteData.size() + " rows");
+            LoggingJUL.getInstance().getLogger().info("Remote " + remoteDb.getClass().getName() + " SELECT. Returned " + remoteData.size() + " rows");
 
             localData.removeAll(remoteData);
-            LoggingJUL.getLogger().info(localData.size() + " new records found in local " + localDb.getClass().getName());
+            LoggingJUL.getInstance().getLogger().info(localData.size() + " new records found in local " + localDb.getClass().getName());
             if (localData.size() != 0) {
                 remoteDb.insert(localData);
-                LoggingJUL.getLogger().info(localData.size() + " new records inserted to remote" + remoteDb.getClass().getName());
+                LoggingJUL.getInstance().getLogger().info(localData.size() + " new records inserted to remote" + remoteDb.getClass().getName());
             }
         } else {
-            LoggingJUL.getLogger().throwing(Main.class.getName(), new Object() {
+            LoggingJUL.getInstance().getLogger().throwing(Main.class.getName(), new Object() {
             }.getClass().getEnclosingMethod().getName(), new NullPointerException("Local or Remote databases are NULL"));
         }
     }

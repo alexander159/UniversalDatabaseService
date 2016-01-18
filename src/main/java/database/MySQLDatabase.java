@@ -25,16 +25,16 @@ public class MySQLDatabase implements Database {
         // jdbc:mysql://<host>[:<port>]/<database_name>
         return DriverManager.getConnection(
                 String.format("jdbc:mysql://%s:%s/%s",
-                        ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_HOST) : SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_HOST)),
-                        ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_PORT) : SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_PORT)),
-                        ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_NAME) : SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_NAME))),
-                ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_USER) : SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_USER)),
-                ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_PASSWORD) : SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_PASSWORD)));
+                        ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_HOST) : SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_HOST)),
+                        ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_PORT) : SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_PORT)),
+                        ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_NAME) : SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_NAME))),
+                ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_USER) : SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_USER)),
+                ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_PASSWORD) : SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_PASSWORD)));
     }
 
     @Override
     public void insert(List<DatabaseData> synchronizedColumns) {
-        String[] columns = SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS).replaceAll(" ", "").split(",");
+        String[] columns = SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS).replaceAll(" ", "").split(",");
         String columnsSql = "";
         for (int i = 0; i < columns.length; i++) {
             if (i != columns.length - 1) {
@@ -45,7 +45,7 @@ public class MySQLDatabase implements Database {
         }
 
         String sql = String.format("INSERT INTO %s (%s) VALUES (%s);",
-                ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE) : SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TABLE)),
+                ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE) : SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TABLE)),
                 columnsSql,
                 columnsSql.replaceAll("\\w+", "?"));
 
@@ -54,11 +54,11 @@ public class MySQLDatabase implements Database {
                 for (int i = 0; i < data.getRow().length; i++) {
                     ps.setString(i + 1, data.getRow()[i]);
                 }
-                LoggingJUL.getLogger().info(() -> ps.toString().substring(ps.toString().indexOf(": ") + 2));
+                LoggingJUL.getInstance().getLogger().info(() -> ps.toString().substring(ps.toString().indexOf(": ") + 2));
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            LoggingJUL.getLogger().throwing(getClass().getName(), new Object() {
+            LoggingJUL.getInstance().getLogger().throwing(getClass().getName(), new Object() {
             }.getClass().getEnclosingMethod().getName(), e);
             e.printStackTrace();
         }
@@ -68,7 +68,7 @@ public class MySQLDatabase implements Database {
     public List<DatabaseData> select() {
         List<DatabaseData> result = new ArrayList<>();
 
-        String[] columns = SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS).replaceAll(" ", "").split(",");
+        String[] columns = SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS).replaceAll(" ", "").split(",");
         String columnsSql = "";
         for (int i = 0; i < columns.length; i++) {
             if (i != columns.length - 1) {
@@ -80,8 +80,8 @@ public class MySQLDatabase implements Database {
 
         String sql = String.format("SELECT %s FROM %s",
                 columnsSql,
-                ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE) : SyncProperties.getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TABLE)));
-        LoggingJUL.getLogger().info(() -> sql);
+                ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE) : SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TABLE)));
+        LoggingJUL.getInstance().getLogger().info(() -> sql);
 
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
@@ -94,7 +94,7 @@ public class MySQLDatabase implements Database {
                 result.add(databaseData);
             }
         } catch (SQLException e) {
-            LoggingJUL.getLogger().throwing(getClass().getName(), new Object() {
+            LoggingJUL.getInstance().getLogger().throwing(getClass().getName(), new Object() {
             }.getClass().getEnclosingMethod().getName(), e);
             e.printStackTrace();
         }

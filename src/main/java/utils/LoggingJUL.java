@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 public class LoggingJUL {
     private static LoggingJUL instance;
-    private static Logger logger;
+    private Logger logger = init();
 
     private LoggingJUL() {
     }
@@ -29,7 +29,7 @@ public class LoggingJUL {
         return instance;
     }
 
-    private static void init() {
+    private static Logger init() {
         try {
             //create logs directory
             File logsDir = new File(Constants.LOGS_FOLDER);
@@ -64,24 +64,23 @@ public class LoggingJUL {
             //apply logger properties
             LogManager.getLogManager().readConfiguration(new FileInputStream(Constants.LOGGING_PROPERTIES));
 
-            //init logger
-            logger = Logger.getLogger(LoggingJUL.class.getName());
-
             Logger.getLogger("javax.management").setLevel(Level.WARNING);
             Logger.getLogger("javax.management.remote").setLevel(Level.WARNING);
             Logger.getLogger("mysql").setLevel(Level.WARNING);
             Logger.getLogger("com.oracle").setLevel(Level.WARNING);
             Logger.getLogger("com.microsoft.sqlserver").setLevel(Level.WARNING);
             Logger.getLogger("com.ibm.db2").setLevel(Level.WARNING);
+
+            //init logger after applying properties
+            return Logger.getLogger(LoggingJUL.class.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 
-    public static Logger getLogger() {
-        if (logger == null) {
-            init();
-        }
+    public Logger getLogger() {
         return logger;
     }
 }
