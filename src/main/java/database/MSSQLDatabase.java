@@ -31,7 +31,7 @@ public class MSSQLDatabase implements Database {
         }
     }
 
-    public static String parse(String d) {
+    public String parseTimestamp(String d) {
         String date = null;
         if (d != null) {
             for (String parse : timestampFormats) {
@@ -79,7 +79,7 @@ public class MSSQLDatabase implements Database {
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             for (DatabaseData data : synchronizedColumns) {
                 for (int i = 0; i < data.getRow().length; i++) {
-                    String date = parse(data.getRow()[i]);
+                    String date = parseTimestamp(data.getRow()[i]);
                     if (date == null) {
                         ps.setString(i + 1, data.getRow()[i]);
                     } else {

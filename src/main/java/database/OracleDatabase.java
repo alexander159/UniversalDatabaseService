@@ -31,7 +31,7 @@ public class OracleDatabase implements Database {
         }
     }
 
-    public static Timestamp parse(String d) {
+    public Timestamp parseTimestamp(String d) {
         Timestamp sqlTimestamp = null;
         if (d != null) {
             for (String parse : timestampFormats) {
@@ -79,7 +79,7 @@ public class OracleDatabase implements Database {
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             for (DatabaseData data : synchronizedColumns) {
                 for (int i = 0; i < data.getRow().length; i++) {
-                    java.sql.Timestamp tms = parse(data.getRow()[i]);
+                    java.sql.Timestamp tms = parseTimestamp(data.getRow()[i]);
                     if (tms == null) {
                         ps.setString(i + 1, data.getRow()[i]);
                     } else {
