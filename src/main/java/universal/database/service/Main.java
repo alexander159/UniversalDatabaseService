@@ -60,16 +60,35 @@ public class Main {
 
         //sync
         if (localDb != null && remoteDb != null) {
-            List<DatabaseData> localData = localDb.select();
-            LoggingJUL.getInstance().getLogger().info("Local " + localDb.getClass().getName() + " SELECT. Returned " + localData.size() + " rows");
-            List<DatabaseData> remoteData = remoteDb.select();
-            LoggingJUL.getInstance().getLogger().info("Remote " + remoteDb.getClass().getName() + " SELECT. Returned " + remoteData.size() + " rows");
+            for (int i = 0; i < SyncProperties.getInstance().getParsedLocalTableNames().size(); i++) {
+                List<DatabaseData> localData = localDb.select(SyncProperties.getInstance().getParsedLocalTableNames().get(i), SyncProperties.getInstance().getParsedLocalColumnNames().get(i));
+                LoggingJUL.getInstance().getLogger().info("Local " + localDb.getClass().getName() + " SELECT. Returned " + localData.size() + " rows");
+                List<DatabaseData> remoteData = remoteDb.select(SyncProperties.getInstance().getParsedRemoteTableNames().get(i), SyncProperties.getInstance().getParsedRemoteColumnNames().get(i));
+                LoggingJUL.getInstance().getLogger().info("Remote " + remoteDb.getClass().getName() + " SELECT. Returned " + remoteData.size() + " rows");
 
-            localData.removeAll(remoteData);
-            LoggingJUL.getInstance().getLogger().info(localData.size() + " new records found in local " + localDb.getClass().getName());
-            if (localData.size() != 0) {
-                remoteDb.insert(localData);
-                LoggingJUL.getInstance().getLogger().info(localData.size() + " new records inserted to remote" + remoteDb.getClass().getName());
+                localData.removeAll(remoteData);
+                LoggingJUL.getInstance().getLogger().info(localData.size() + " new records found in local " + localDb.getClass().getName());
+                if (localData.size() != 0) {
+                    remoteDb.insert(localData, SyncProperties.getInstance().getParsedRemoteTableNames().get(i), SyncProperties.getInstance().getParsedRemoteColumnNames().get(i));
+                    LoggingJUL.getInstance().getLogger().info(localData.size() + " new records inserted to remote" + remoteDb.getClass().getName());
+                }
+
+                //reverse sync
+                if (Integer.parseInt(SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.FULL_SYNC)) == 1) {
+                    LoggingJUL.getInstance().getLogger().info("[REVERSE SYNC]");
+
+                    List<DatabaseData> localDataReverse = localDb.select(SyncProperties.getInstance().getParsedLocalTableNames().get(i), SyncProperties.getInstance().getParsedLocalColumnNames().get(i));
+                    LoggingJUL.getInstance().getLogger().info("Local " + localDb.getClass().getName() + " SELECT. Returned " + localDataReverse.size() + " rows");
+                    List<DatabaseData> remoteDataReverse = remoteDb.select(SyncProperties.getInstance().getParsedRemoteTableNames().get(i), SyncProperties.getInstance().getParsedRemoteColumnNames().get(i));
+                    LoggingJUL.getInstance().getLogger().info("Remote " + remoteDb.getClass().getName() + " SELECT. Returned " + remoteDataReverse.size() + " rows");
+
+                    remoteDataReverse.removeAll(localDataReverse);
+                    LoggingJUL.getInstance().getLogger().info(remoteDataReverse.size() + " new records found in remote " + remoteDb.getClass().getName());
+                    if (remoteDataReverse.size() != 0) {
+                        localDb.insert(remoteDataReverse, SyncProperties.getInstance().getParsedLocalTableNames().get(i), SyncProperties.getInstance().getParsedLocalColumnNames().get(i));
+                        LoggingJUL.getInstance().getLogger().info(remoteDataReverse.size() + " new records inserted to local" + localDb.getClass().getName());
+                    }
+                }
             }
         } else {
             LoggingJUL.getInstance().getLogger().throwing(Main.class.getName(), new Object() {

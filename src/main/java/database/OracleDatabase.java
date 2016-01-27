@@ -8,6 +8,8 @@ import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public class OracleDatabase implements Database {
@@ -60,8 +62,8 @@ public class OracleDatabase implements Database {
     }
 
     @Override
-    public void insert(List<DatabaseData> synchronizedColumns) {
-        String[] columns = SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS).replaceAll(" ", "").split(",");
+    public void insert(List<DatabaseData> synchronizedColumns, String tableName, LinkedList<String> columnNames) {
+        String[] columns = Arrays.copyOf(columnNames.toArray(), columnNames.toArray().length, String[].class);
         String columnsSql = "";
         for (int i = 0; i < columns.length; i++) {
             if (i != columns.length - 1) {
@@ -72,21 +74,26 @@ public class OracleDatabase implements Database {
         }
 
         String sql = String.format("INSERT INTO %s (%s) VALUES (%s)",
-                ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE) : SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TABLE)),
+                tableName,
                 columnsSql,
                 columnsSql.replaceAll("\\w+", "?"));
 
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             for (DatabaseData data : synchronizedColumns) {
                 for (int i = 0; i < data.getRow().length; i++) {
-                    java.sql.Timestamp tms = parseTimestamp(data.getRow()[i]);
-                    if (tms == null) {
-                        ps.setString(i + 1, data.getRow()[i]);
+                    if (data.getRow()[i] == null) {
+                        ps.setObject(i + 1, null);
+                        sql = sql.replaceFirst("\\?", "null");
                     } else {
-                        ps.setTimestamp(i + 1, tms);
-                    }
+                        java.sql.Timestamp tms = parseTimestamp(data.getRow()[i]);
+                        if (tms == null) {
+                            ps.setString(i + 1, data.getRow()[i]);
+                        } else {
+                            ps.setTimestamp(i + 1, tms);
+                        }
 
-                    sql = sql.replaceFirst("\\?", data.getRow()[i]);
+                        sql = sql.replaceFirst("\\?", data.getRow()[i]);
+                    }
                 }
                 LoggingJUL.getInstance().getLogger().info(sql);
                 ps.executeUpdate();
@@ -99,10 +106,10 @@ public class OracleDatabase implements Database {
     }
 
     @Override
-    public List<DatabaseData> select() {
+    public List<DatabaseData> select(String tableName, LinkedList<String> columnNames) {
         List<DatabaseData> result = new ArrayList<>();
 
-        String[] columns = SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE_COLUMNS).replaceAll(" ", "").split(",");
+        String[] columns = Arrays.copyOf(columnNames.toArray(), columnNames.toArray().length, String[].class);
         String columnsSql = "";
         for (int i = 0; i < columns.length; i++) {
             if (i != columns.length - 1) {
@@ -114,8 +121,8 @@ public class OracleDatabase implements Database {
 
         String sql = String.format("SELECT %s FROM %s",
                 columnsSql,
-                ((dbType == Database.DatabaseType.LOCAL) ? SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.LOCAL_DB_TABLE) : SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.REMOTE_DB_TABLE)));
-        LoggingJUL.getInstance().getLogger().info(sql);
+                tableName);
+        LoggingJUL.getInstance().getLogger().info(() -> sql);
 
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
