@@ -6,7 +6,7 @@ import utils.LoggingJUL;
 import utils.SyncProperties;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -61,9 +61,9 @@ public class Main {
         //sync
         if (localDb != null && remoteDb != null) {
             for (int i = 0; i < SyncProperties.getInstance().getParsedLocalTableNames().size(); i++) {
-                List<DatabaseData> localData = localDb.select(SyncProperties.getInstance().getParsedLocalTableNames().get(i), SyncProperties.getInstance().getParsedLocalColumnNames().get(i));
+                HashSet<DatabaseData> localData = localDb.select(SyncProperties.getInstance().getParsedLocalTableNames().get(i), SyncProperties.getInstance().getParsedLocalColumnNames().get(i));
                 LoggingJUL.getInstance().getLogger().info("Local " + localDb.getClass().getName() + " SELECT. Returned " + localData.size() + " rows");
-                List<DatabaseData> remoteData = remoteDb.select(SyncProperties.getInstance().getParsedRemoteTableNames().get(i), SyncProperties.getInstance().getParsedRemoteColumnNames().get(i));
+                HashSet<DatabaseData> remoteData = remoteDb.select(SyncProperties.getInstance().getParsedRemoteTableNames().get(i), SyncProperties.getInstance().getParsedRemoteColumnNames().get(i));
                 LoggingJUL.getInstance().getLogger().info("Remote " + remoteDb.getClass().getName() + " SELECT. Returned " + remoteData.size() + " rows");
 
                 localData.removeAll(remoteData);
@@ -77,9 +77,9 @@ public class Main {
                 if (Integer.parseInt(SyncProperties.getInstance().getSyncProp().getProperty(Constants.SyncPropFile.FULL_SYNC)) == 1) {
                     LoggingJUL.getInstance().getLogger().info("[REVERSE SYNC]");
 
-                    List<DatabaseData> localDataReverse = localDb.select(SyncProperties.getInstance().getParsedLocalTableNames().get(i), SyncProperties.getInstance().getParsedLocalColumnNames().get(i));
+                    HashSet<DatabaseData> localDataReverse = localDb.select(SyncProperties.getInstance().getParsedLocalTableNames().get(i), SyncProperties.getInstance().getParsedLocalColumnNames().get(i));
                     LoggingJUL.getInstance().getLogger().info("Local " + localDb.getClass().getName() + " SELECT. Returned " + localDataReverse.size() + " rows");
-                    List<DatabaseData> remoteDataReverse = remoteDb.select(SyncProperties.getInstance().getParsedRemoteTableNames().get(i), SyncProperties.getInstance().getParsedRemoteColumnNames().get(i));
+                    HashSet<DatabaseData> remoteDataReverse = remoteDb.select(SyncProperties.getInstance().getParsedRemoteTableNames().get(i), SyncProperties.getInstance().getParsedRemoteColumnNames().get(i));
                     LoggingJUL.getInstance().getLogger().info("Remote " + remoteDb.getClass().getName() + " SELECT. Returned " + remoteDataReverse.size() + " rows");
 
                     remoteDataReverse.removeAll(localDataReverse);

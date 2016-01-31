@@ -5,10 +5,9 @@ import utils.LoggingJUL;
 import utils.SyncProperties;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 
 public class MySQLDatabase implements Database {
     private Database.DatabaseType dbType;
@@ -35,7 +34,7 @@ public class MySQLDatabase implements Database {
     }
 
     @Override
-    public void insert(List<DatabaseData> synchronizedColumns, String tableName, LinkedList<String> columnNames) {
+    public void insert(HashSet<DatabaseData> synchronizedColumns, String tableName, LinkedList<String> columnNames) {
         String[] columns = Arrays.copyOf(columnNames.toArray(), columnNames.toArray().length, String[].class);
         String columnsSql = "";
         for (int i = 0; i < columns.length; i++) {
@@ -53,16 +52,17 @@ public class MySQLDatabase implements Database {
 
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             for (DatabaseData data : synchronizedColumns) {
+                String logsSql = sql;
                 for (int i = 0; i < data.getRow().length; i++) {
                     if (data.getRow()[i] == null) {
                         ps.setObject(i + 1, null);
-                        sql = sql.replaceFirst("\\?", "null");
+                        logsSql = logsSql.replaceFirst("\\?", "null");
                     } else {
                         ps.setString(i + 1, data.getRow()[i]);
-                        sql = sql.replaceFirst("\\?", data.getRow()[i]);
+                        logsSql = logsSql.replaceFirst("\\?", data.getRow()[i]);
                     }
                 }
-                LoggingJUL.getInstance().getLogger().info(sql);
+                LoggingJUL.getInstance().getLogger().info(logsSql);
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
@@ -73,8 +73,8 @@ public class MySQLDatabase implements Database {
     }
 
     @Override
-    public List<DatabaseData> select(String tableName, LinkedList<String> columnNames) {
-        List<DatabaseData> result = new ArrayList<>();
+    public HashSet<DatabaseData> select(String tableName, LinkedList<String> columnNames) {
+        HashSet<DatabaseData> result = new HashSet<>();
 
         String[] columns = Arrays.copyOf(columnNames.toArray(), columnNames.toArray().length, String[].class);
         String columnsSql = "";
