@@ -79,11 +79,11 @@ public class OracleDatabase implements Database {
 
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             for (DatabaseData data : synchronizedColumns) {
-                String logsSql = sql;
+                String logsSql = sql.substring(0, sql.lastIndexOf("(") + 1);
                 for (int i = 0; i < data.getRow().length; i++) {
                     if (data.getRow()[i] == null) {
                         ps.setObject(i + 1, null);
-                        logsSql = logsSql.replaceFirst("\\?", "null");
+                        logsSql += "null, ";
                     } else {
                         java.sql.Timestamp tms = parseTimestamp(data.getRow()[i]);
                         if (tms == null) {
@@ -92,10 +92,10 @@ public class OracleDatabase implements Database {
                             ps.setTimestamp(i + 1, tms);
                         }
 
-                        logsSql = logsSql.replaceFirst("\\?", data.getRow()[i]);
+                        logsSql += data.getRow()[i] + ", ";
                     }
                 }
-                LoggingJUL.getInstance().getLogger().info(logsSql);
+                LoggingJUL.getInstance().getLogger().info(logsSql.substring(0, logsSql.lastIndexOf(",")) + ")");
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
