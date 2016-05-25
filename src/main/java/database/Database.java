@@ -10,6 +10,8 @@ public interface Database {
 
     public void insert(HashSet<DatabaseData> synchronizedColumns, String tableName, LinkedList<String> columnNames);
 
+    public void update(DatabaseData synchronizedColumns, String tableName, LinkedList<String> columnNames);
+
     public HashSet<DatabaseData> select(String tableName, LinkedList<String> columnNames);
 
     public enum DatabaseType {LOCAL, REMOTE}
