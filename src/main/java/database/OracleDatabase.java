@@ -7,11 +7,13 @@ import utils.SyncProperties;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 
 public class OracleDatabase implements Database {
+    public static final String TAG = "OracleDatabase";
     private static final String[] timestampFormats = {
             "yyyy-MM-dd HH:mm:ss.SSS",
             "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm:ssZ",
@@ -79,11 +81,12 @@ public class OracleDatabase implements Database {
 
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             for (DatabaseData data : synchronizedColumns) {
-                String logsSql = sql;
+                ArrayList<String> columnPlaceholders = LoggingJUL.createTemporaryPlaceholdersArray(data.getRow().length, TAG, 0);
+                String logsSql = LoggingJUL.getInsertLogSql("INSERT INTO %s (%s) VALUES (%s)", tableName, columns, columnPlaceholders);
                 for (int i = 0; i < data.getRow().length; i++) {
                     if (data.getRow()[i] == null) {
                         ps.setObject(i + 1, null);
-                        logsSql = logsSql.replaceFirst("\\?", "null");
+                        logsSql = logsSql.replace(columnPlaceholders.get(i), "null");
                     } else {
                         Timestamp tms = parseTimestamp(data.getRow()[i]);
                         if (tms == null) {
@@ -92,7 +95,7 @@ public class OracleDatabase implements Database {
                             ps.setTimestamp(i + 1, tms);
                         }
 
-                        logsSql = logsSql.replaceFirst("\\?", data.getRow()[i]);
+                        logsSql = logsSql.replace(columnPlaceholders.get(i), data.getRow()[i]);
                     }
                 }
                 LoggingJUL.getInstance().getLogger().info(logsSql);
@@ -127,22 +130,25 @@ public class OracleDatabase implements Database {
                 columnsSql,
                 columnNames.getFirst());
 
+        ArrayList<String> columnPlaceholders = LoggingJUL.createTemporaryPlaceholdersArray(synchronizedColumns.getRow().length + 1, TAG, 0);    //+1  for WHERE case
+        String logsSql = LoggingJUL.getUpdateLogSql("UPDATE %s SET %s WHERE %s = ?;", tableName, columns, columnNames.getFirst(), columnPlaceholders);
+
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             for (int i = 0; i < synchronizedColumns.getRow().length; i++) {
                 if (synchronizedColumns.getRow()[i] == null) {
                     ps.setObject(i + 1, null);
-                    sql = sql.replaceFirst("\\?", "null");
+                    logsSql = logsSql.replace(columnPlaceholders.get(i), "null");
                 } else {
                     ps.setString(i + 1, synchronizedColumns.getRow()[i]);
-                    sql = sql.replaceFirst("\\?", synchronizedColumns.getRow()[i]);
+                    logsSql = logsSql.replace(columnPlaceholders.get(i), synchronizedColumns.getRow()[i]);
                 }
 
                 if (i == synchronizedColumns.getRow().length - 1) {
                     ps.setString(i + 2, synchronizedColumns.getRow()[0]);
-                    sql = sql.replaceFirst("\\?", synchronizedColumns.getRow()[0]);
+                    logsSql = logsSql.replace(columnPlaceholders.get(columnPlaceholders.size() - 1), synchronizedColumns.getRow()[0]);
                 }
             }
-            LoggingJUL.getInstance().getLogger().info(sql);
+            LoggingJUL.getInstance().getLogger().info(logsSql);
             ps.executeUpdate();
 
         } catch (SQLException e) {

@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -83,4 +84,70 @@ public class LoggingJUL {
     public Logger getLogger() {
         return logger;
     }
+
+    public static String convertPlaceholdersListToStr(ArrayList<String> placeholdersList) {
+        String result = "";
+
+        for (int i = 0; i < placeholdersList.size(); i++) {
+            if (i != placeholdersList.size() - 1) {
+                result += String.format("%s, ", placeholdersList.get(i));
+            } else {
+                result += String.format("%s", placeholdersList.get(i));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Used to fix .replaceFirst() bug
+     *
+     * @return string like placeholderText_placeholderStartId, placeholderText_placeholderStartId+1, placeholderText_placeholderStartId+2, etc.
+     */
+    public static ArrayList<String> createTemporaryPlaceholdersArray(int columnsCount, String placeholderText, int placeholderStartId) {
+        ArrayList<String> result = new ArrayList<>();
+
+        for (int i = 0; i < columnsCount; i++) {
+            result.add(String.format("%s_%s", placeholderText, placeholderStartId++));
+        }
+
+        return result;
+    }
+
+    public static String getInsertLogSql(String insertStatement, String tableName, String[] columns, ArrayList<String> columnPlaceholders) {
+        String columnsLogSql = "";
+        String columnsLogPlaceholderValues = "";
+        for (int i = 0; i < columns.length; i++) {
+            if (i != columns.length - 1) {
+                columnsLogSql += columns[i] + ", ";
+                columnsLogPlaceholderValues += columnPlaceholders + ", ";
+            } else {
+                columnsLogSql += columns[i];
+                columnsLogPlaceholderValues += columnPlaceholders;
+            }
+        }
+
+        return String.format("INSERT INTO %s (%s) VALUES (%s)",
+                tableName,
+                columnsLogSql,
+                columnsLogPlaceholderValues);
+    }
+
+    public static String getUpdateLogSql(String updateStatement, String tableName, String[] columns, String whereColumnName, ArrayList<String> columnPlaceholders) {
+        String columnsLogSql = "";
+        for (int i = 0; i < columns.length; i++) {
+            if (i != columns.length - 1) {
+                columnsLogSql += String.format("%s = %s, ", columns[i], columnPlaceholders.get(i));
+            } else {
+                columnsLogSql += String.format("%s = %s", columns[i], columnPlaceholders.get(i));
+            }
+        }
+
+        return String.format("UPDATE %s SET %s WHERE %s = %s;",
+                tableName,
+                columnsLogSql,
+                whereColumnName,
+                columnPlaceholders.get(columnPlaceholders.size() - 1));
+    }
+
 }
