@@ -1,6 +1,6 @@
 # UniversalDatabaseService
 
-This is a universal cross-platform database sychronization service. The service suports MySQL, MSSQL, DB2, Oracle. The main targer is to synchronize tables from a local database to remote. The programm works as a service.
+This is a universal cross-platform database synchronization service. The service supports MySQL, MSSQL, DB2, Oracle. The main target is to synchronize tables from a local database to remote. The program works as a service.
 
 YAJSW was used in this project to implement services. Check it [here](http://yajsw.sourceforge.net/).
 
